@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.animation.Animation;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
@@ -37,7 +38,7 @@ public class SupportFragment extends Fragment implements ISupportFragment {
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         mDelegate.onAttach();
         _mActivity = (SupportActivity) mDelegate.getActivity();
