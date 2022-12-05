@@ -2,6 +2,8 @@ package me.yokeyword.sample;
 
 import android.app.Application;
 
+import androidx.annotation.NonNull;
+
 import me.yokeyword.fragmentation.Fragmentation;
 import me.yokeyword.fragmentation.helper.ExceptionHandler;
 
@@ -22,12 +24,9 @@ public class App extends Application {
                  * 可以获取到{@link me.yokeyword.fragmentation.exception.AfterSaveStateTransactionWarning}
                  * 在遇到After onSaveInstanceState时，不会抛出异常，会回调到下面的ExceptionHandler
                  */
-                .handleException(new ExceptionHandler() {
-                    @Override
-                    public void onException(Exception e) {
-                        // 以Bugtags为例子: 把捕获到的 Exception 传到 Bugtags 后台。
-                        // Bugtags.sendException(e);
-                    }
+                .handleException(e -> {
+                    // 以Bugtags为例子: 把捕获到的 Exception 传到 Bugtags 后台。
+                    // Bugtags.sendException(e);
                 })
                 .install();
     }

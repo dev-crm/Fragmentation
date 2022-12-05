@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'org.jetbrains.kotlin.android'
 //apply plugin: 'com.novoda.bintray-release'
 
 android {
@@ -11,9 +12,11 @@ android {
 }
 
 dependencies {
-    compileOnly "androidx.appcompat:appcompat:$rootProject.appCompatVersion"
+    compileOnly "androidx.appcompat:appcompat:1.4.0"
+    compileOnly 'androidx.activity:activity-ktx:1.6.1'
+    compileOnly 'androidx.fragment:fragment-ktx:1.5.1'
+
     api project(':fragmentation_core')
-//    api 'me.xuexuan:fragmentationx-core:1.0.6'
 }
 
 

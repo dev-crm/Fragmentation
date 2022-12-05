@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'org.jetbrains.kotlin.android'
 
 static def gitLatestTag() {
     try {
@@ -45,11 +46,10 @@ dependencies {
     implementation 'com.google.android.material:material:1.1.0-alpha02'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.1.0-alpha01'
-//    api project(':fragmentation')
-//    api project(':fragmentation_swipeback')
 
-    api 'me.xuexuan:fragmentationx:1.0.6'
-    api 'me.xuexuan:fragmentationx-swipeback:1.0.6'
+    api project(':fragmentation')
+    api project(':fragmentation_swipeback')
+
     // EventBus
     api project(':eventbus_activity_scope')
     implementation 'org.greenrobot:eventbus:3.0.0'

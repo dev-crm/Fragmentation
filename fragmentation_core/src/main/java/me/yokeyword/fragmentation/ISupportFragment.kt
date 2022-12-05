@@ -1,62 +1,42 @@
-package me.yokeyword.fragmentation;
+package me.yokeyword.fragmentation
 
-import android.os.Bundle;
-import androidx.annotation.IntDef;
-import androidx.annotation.Nullable;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
-import me.yokeyword.fragmentation.anim.FragmentAnimator;
+import android.os.Bundle
+import androidx.annotation.IntDef
+import me.yokeyword.fragmentation.anim.FragmentAnimator
 
 /**
  * Created by YoKey on 17/6/23.
  */
+interface ISupportFragment {
 
-public interface ISupportFragment {
-    // LaunchMode
-    int STANDARD = 0;
-    int SINGLETOP = 1;
-    int SINGLETASK = 2;
+    @IntDef(STANDARD, SINGLE_TOP, SINGLE_TASK)
+    @Retention(AnnotationRetention.SOURCE)
+    annotation class LaunchMode
 
-    // ResultCode
-    int RESULT_CANCELED = 0;
-    int RESULT_OK = -1;
+    val supportDelegate: SupportFragmentDelegate
+    fun extraTransaction(): ExtraTransaction?
+    fun post(runnable: Runnable?)
+    fun onEnterAnimationEnd(savedInstanceState: Bundle?)
+    fun onLazyInitView(savedInstanceState: Bundle?)
+    fun onSupportVisible()
+    fun onSupportInvisible()
+    val isSupportVisible: Boolean
+    fun onCreateFragmentAnimator(): FragmentAnimator
+    var fragmentAnimator: FragmentAnimator?
+    fun setFragmentResult(resultCode: Int, bundle: Bundle?)
+    fun onFragmentResult(requestCode: Int, resultCode: Int, data: Bundle?)
+    fun onNewBundle(args: Bundle?)
+    fun putNewBundle(newBundle: Bundle?)
+    fun onBackPressedSupport(): Boolean
 
-    @IntDef({STANDARD, SINGLETOP, SINGLETASK})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface LaunchMode {
+    companion object {
+        // LaunchMode
+        const val STANDARD = 0
+        const val SINGLE_TOP = 1
+        const val SINGLE_TASK = 2
+
+        // ResultCode
+        const val RESULT_CANCELED = 0
+        const val RESULT_OK = -1
     }
-
-    SupportFragmentDelegate getSupportDelegate();
-
-    ExtraTransaction extraTransaction();
-
-    void post(Runnable runnable);
-
-    void onEnterAnimationEnd(@Nullable Bundle savedInstanceState);
-
-    void onLazyInitView(@Nullable Bundle savedInstanceState);
-
-    void onSupportVisible();
-
-    void onSupportInvisible();
-
-    boolean isSupportVisible();
-
-    FragmentAnimator onCreateFragmentAnimator();
-
-    FragmentAnimator getFragmentAnimator();
-
-    void setFragmentAnimator(FragmentAnimator fragmentAnimator);
-
-    void setFragmentResult(int resultCode, Bundle bundle);
-
-    void onFragmentResult(int requestCode, int resultCode, Bundle data);
-
-    void onNewBundle(Bundle args);
-
-    void putNewBundle(Bundle newBundle);
-
-    boolean onBackPressedSupport();
 }

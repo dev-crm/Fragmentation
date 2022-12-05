@@ -1,120 +1,46 @@
-package me.yokeyword.fragmentation;
+package me.yokeyword.fragmentation
 
-import android.os.Bundle;
-import androidx.annotation.DrawableRes;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import android.view.MotionEvent;
-
-import me.yokeyword.fragmentation.anim.FragmentAnimator;
+import me.yokeyword.fragmentation.anim.FragmentAnimator
+import java.lang.Runnable
+import me.yokeyword.fragmentation.ISupportFragment.LaunchMode
+import java.lang.Class
+import androidx.annotation.DrawableRes
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import me.yokeyword.fragmentation.anim.DefaultNoAnimator
 
 /**
- * Base class for activities that use the support-based
- * {@link ISupportActivity} and
- * {@link AppCompatActivity} APIs.
- * <p>
+ * activities基类
+ * [ISupportActivity] and
+ * [AppCompatActivity] APIs.
+ *
  * Created by YoKey on 17/6/20.
  */
-public class SupportActivity extends AppCompatActivity implements ISupportActivity {
-    final SupportActivityDelegate mDelegate = new SupportActivityDelegate(this);
+open class SupportActivity : AppCompatActivity, ISupportActivity {
+    private val mDelegate = SupportActivityDelegate(this)
 
-    @Override
-    public SupportActivityDelegate getSupportDelegate() {
-        return mDelegate;
+    constructor() : super()
+    constructor(contentLayoutId: Int) : super(contentLayoutId)
+
+    override val supportDelegate: SupportActivityDelegate
+        get() = mDelegate
+
+    override fun extraTransaction(): ExtraTransaction {
+        return mDelegate.extraTransaction()
     }
 
-    /**
-     * Perform some extra transactions.
-     * 额外的事务：自定义Tag，添加SharedElement动画，操作非回退栈Fragment
-     */
-    @Override
-    public ExtraTransaction extraTransaction() {
-        return mDelegate.extraTransaction();
-    }
+    override var fragmentAnimator: FragmentAnimator = DefaultNoAnimator()
+        get() = mDelegate.fragmentAnimator
+        set(value) {
+            mDelegate.fragmentAnimator = value
+            field = value
+        }
 
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        mDelegate.onCreate(savedInstanceState);
-    }
+    override fun onCreateFragmentAnimator(): FragmentAnimator = mDelegate.onCreateFragmentAnimator()
 
-    @Override
-    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        mDelegate.onPostCreate(savedInstanceState);
-    }
+    override fun post(runnable: Runnable?) = mDelegate.post(runnable)
 
-    @Override
-    protected void onDestroy() {
-        mDelegate.onDestroy();
-        super.onDestroy();
-    }
-
-    /**
-     * Note： return mDelegate.dispatchTouchEvent(ev) || super.dispatchTouchEvent(ev);
-     */
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent ev) {
-        return mDelegate.dispatchTouchEvent(ev) || super.dispatchTouchEvent(ev);
-    }
-
-    /**
-     * 不建议复写该方法,请使用 {@link #onBackPressedSupport} 代替
-     */
-    @Override
-    final public void onBackPressed() {
-        mDelegate.onBackPressed();
-    }
-
-    /**
-     * 该方法回调时机为,Activity回退栈内Fragment的数量 小于等于1 时,默认finish Activity
-     * 请尽量复写该方法,避免复写onBackPress(),以保证SupportFragment内的onBackPressedSupport()回退事件正常执行
-     */
-    @Override
-    public void onBackPressedSupport() {
-        mDelegate.onBackPressedSupport();
-    }
-
-    /**
-     * 获取设置的全局动画 copy
-     *
-     * @return FragmentAnimator
-     */
-    @Override
-    public FragmentAnimator getFragmentAnimator() {
-        return mDelegate.getFragmentAnimator();
-    }
-
-    /**
-     * Set all fragments animation.
-     * 设置Fragment内的全局动画
-     */
-    @Override
-    public void setFragmentAnimator(FragmentAnimator fragmentAnimator) {
-        mDelegate.setFragmentAnimator(fragmentAnimator);
-    }
-
-    /**
-     * Set all fragments animation.
-     * 构建Fragment转场动画
-     * <p/>
-     * 如果是在Activity内实现,则构建的是Activity内所有Fragment的转场动画,
-     * 如果是在Fragment内实现,则构建的是该Fragment的转场动画,此时优先级 > Activity的onCreateFragmentAnimator()
-     *
-     * @return FragmentAnimator对象
-     */
-    @Override
-    public FragmentAnimator onCreateFragmentAnimator() {
-        return mDelegate.onCreateFragmentAnimator();
-    }
-
-    @Override
-    public void post(Runnable runnable) {
-        mDelegate.post(runnable);
-    }
-
-    /****************************************以下为可选方法(Optional methods)******************************************************/
+    override fun onBackPressedSupport() = mDelegate.onBackPressedSupport()
 
     /**
      * 加载根Fragment, 即Activity内的第一个Fragment 或 Fragment内的第一个子Fragment
@@ -122,142 +48,111 @@ public class SupportActivity extends AppCompatActivity implements ISupportActivi
      * @param containerId 容器id
      * @param toFragment  目标Fragment
      */
-    public void loadRootFragment(int containerId, @NonNull ISupportFragment toFragment) {
-        mDelegate.loadRootFragment(containerId, toFragment);
-    }
-
-    public void loadRootFragment(int containerId, ISupportFragment toFragment, boolean addToBackStack, boolean allowAnimation) {
-        mDelegate.loadRootFragment(containerId, toFragment, addToBackStack, allowAnimation);
-    }
+    fun loadRootFragment(
+        containerId: Int, toFragment: ISupportFragment, addToBackStack: Boolean = true,
+        allowAnimation: Boolean = false
+    ) = mDelegate.loadRootFragment(containerId, toFragment, addToBackStack, allowAnimation)
 
     /**
      * 加载多个同级根Fragment,类似Wechat, QQ主页的场景
      */
-    public void loadMultipleRootFragment(int containerId, int showPosition, ISupportFragment... toFragments) {
-        mDelegate.loadMultipleRootFragment(containerId, showPosition, toFragments);
-    }
+    fun loadMultipleRootFragment(
+        containerId: Int,
+        showPosition: Int,
+        vararg toFragments: ISupportFragment
+    ) =  mDelegate.loadMultipleRootFragment(containerId, showPosition, *toFragments)
 
     /**
      * show一个Fragment,hide其他同栈所有Fragment
      * 使用该方法时，要确保同级栈内无多余的Fragment,(只有通过loadMultipleRootFragment()载入的Fragment)
-     * <p>
-     * 建议使用更明确的{@link #showHideFragment(ISupportFragment, ISupportFragment)}
+     *
+     * 建议使用更明确的[.showHideFragment]
      *
      * @param showFragment 需要show的Fragment
      */
-    public void showHideFragment(ISupportFragment showFragment) {
-        mDelegate.showHideFragment(showFragment);
-    }
+    fun showHideFragment(showFragment: ISupportFragment, hideFragment: ISupportFragment? = null) =
+        mDelegate.showHideFragment(showFragment, hideFragment)
 
     /**
-     * show一个Fragment,hide一个Fragment ; 主要用于类似微信主页那种 切换tab的情况
+     * 推荐使用[SupportFragment.start]
      */
-    public void showHideFragment(ISupportFragment showFragment, ISupportFragment hideFragment) {
-        mDelegate.showHideFragment(showFragment, hideFragment);
+    fun start(
+        toFragment: ISupportFragment?,
+        @LaunchMode launchMode: Int = ISupportFragment.STANDARD
+    ) = toFragment?.also {
+        mDelegate.start(it, launchMode)
     }
 
     /**
-     * It is recommended to use {@link SupportFragment#start(ISupportFragment)}.
+     * 推荐使用SupportFragment.startForResult 。启动一个片段，当它弹出时你想要一个结果。
      */
-    public void start(ISupportFragment toFragment) {
-        mDelegate.start(toFragment);
-    }
+    fun startForResult(toFragment: ISupportFragment, requestCode: Int) =
+        mDelegate.startForResult(toFragment, requestCode)
 
     /**
-     * It is recommended to use {@link SupportFragment#start(ISupportFragment, int)}.
+     * 推荐使用[SupportFragment.startWithPop]。启动目标 Fragment 并弹出自身
+     */
+    fun startWithPop(toFragment: ISupportFragment) = mDelegate.startWithPop(toFragment)
+
+    /**
+     * 推荐使用[SupportFragment.startWithPopTo]
      *
-     * @param launchMode Similar to Activity's LaunchMode.
+     * @see .popTo
+     * @see .start
      */
-    public void start(ISupportFragment toFragment, @ISupportFragment.LaunchMode int launchMode) {
-        mDelegate.start(toFragment, launchMode);
-    }
+    fun startWithPopTo(
+        toFragment: ISupportFragment,
+        targetFragmentClass: Class<Fragment>,
+        includeTargetFragment: Boolean
+    ) = mDelegate.startWithPopTo(toFragment, targetFragmentClass, includeTargetFragment)
 
     /**
-     * It is recommended to use {@link SupportFragment#startForResult(ISupportFragment, int)}.
-     * Launch an fragment for which you would like a result when it poped.
+     * 推荐使用 [SupportFragment.replaceFragment]。
      */
-    public void startForResult(ISupportFragment toFragment, int requestCode) {
-        mDelegate.startForResult(toFragment, requestCode);
-    }
+    fun replaceFragment(toFragment: ISupportFragment, addToBackStack: Boolean) =
+        mDelegate.replaceFragment(toFragment, addToBackStack)
 
     /**
-     * It is recommended to use {@link SupportFragment#startWithPop(ISupportFragment)}.
-     * Start the target Fragment and pop itself
+     * 弹出片段。
      */
-    public void startWithPop(ISupportFragment toFragment) {
-        mDelegate.startWithPop(toFragment);
-    }
+    fun pop() = mDelegate.pop()
 
     /**
-     * It is recommended to use {@link SupportFragment#startWithPopTo(ISupportFragment, Class, boolean)}.
-     *
-     * @see #popTo(Class, boolean)
-     * +
-     * @see #start(ISupportFragment)
-     */
-    public void startWithPopTo(ISupportFragment toFragment, Class<?> targetFragmentClass, boolean includeTargetFragment) {
-        mDelegate.startWithPopTo(toFragment, targetFragmentClass, includeTargetFragment);
-    }
-
-    /**
-     * It is recommended to use {@link SupportFragment#replaceFragment(ISupportFragment, boolean)}.
-     */
-    public void replaceFragment(ISupportFragment toFragment, boolean addToBackStack) {
-        mDelegate.replaceFragment(toFragment, addToBackStack);
-    }
-
-    /**
-     * Pop the fragment.
-     */
-    public void pop() {
-        mDelegate.pop();
-    }
-
-    /**
-     * Pop the last fragment transition from the manager's fragment
-     * back stack.
-     * <p>
      * 出栈到目标fragment
+     *
+     * 如果你想在出栈后, 立刻进行FragmentTransaction操作，请使用该方法
      *
      * @param targetFragmentClass   目标fragment
      * @param includeTargetFragment 是否包含该fragment
      */
-    public void popTo(Class<?> targetFragmentClass, boolean includeTargetFragment) {
-        mDelegate.popTo(targetFragmentClass, includeTargetFragment);
-    }
-
-    /**
-     * If you want to begin another FragmentTransaction immediately after popTo(), use this method.
-     * 如果你想在出栈后, 立刻进行FragmentTransaction操作，请使用该方法
-     */
-    public void popTo(Class<?> targetFragmentClass, boolean includeTargetFragment, Runnable afterPopTransactionRunnable) {
-        mDelegate.popTo(targetFragmentClass, includeTargetFragment, afterPopTransactionRunnable);
-    }
-
-    public void popTo(Class<?> targetFragmentClass, boolean includeTargetFragment, Runnable afterPopTransactionRunnable, int popAnim) {
-        mDelegate.popTo(targetFragmentClass, includeTargetFragment, afterPopTransactionRunnable, popAnim);
-    }
+    fun popTo(
+        targetFragmentClass: Class<Fragment>,
+        includeTargetFragment: Boolean,
+        afterPopTransactionRunnable: Runnable? = null,
+        popAnim: Int = TransactionDelegate.DEFAULT_POP_TO_ANIM
+    ) = mDelegate.popTo(
+        targetFragmentClass,
+        includeTargetFragment,
+        afterPopTransactionRunnable,
+        popAnim
+    )
 
     /**
      * 当Fragment根布局 没有 设定background属性时,
-     * Fragmentation默认使用Theme的android:windowbackground作为Fragment的背景,
+     * Fragmentation默认使用Theme的android:windowBackground作为Fragment的背景,
      * 可以通过该方法改变其内所有Fragment的默认背景。
      */
-    public void setDefaultFragmentBackground(@DrawableRes int backgroundRes) {
-        mDelegate.setDefaultFragmentBackground(backgroundRes);
+    fun setDefaultFragmentBackground(@DrawableRes backgroundRes: Int) {
+        mDelegate.defaultFragmentBackground = backgroundRes
     }
 
     /**
      * 得到位于栈顶Fragment
      */
-    public ISupportFragment getTopFragment() {
-        return SupportHelper.getTopFragment(getSupportFragmentManager());
-    }
+    fun getTopFragment(): ISupportFragment? = SupportHelper.getTopFragment(supportFragmentManager)
 
     /**
      * 获取栈内的fragment对象
      */
-    public <T extends ISupportFragment> T findFragment(Class<T> fragmentClass) {
-        return SupportHelper.findFragment(getSupportFragmentManager(), fragmentClass);
-    }
+    fun <T : ISupportFragment?> findFragment(fragmentClass: Class<T>?): T? = SupportHelper.findFragment(supportFragmentManager, fragmentClass)
 }

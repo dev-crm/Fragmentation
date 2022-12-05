@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.yokeyword.eventbusactivityscope.EventBusActivityScope;
+import me.yokeyword.fragmentation.ISupportFragment;
 import me.yokeyword.fragmentation.SupportFragment;
 import me.yokeyword.sample.R;
 import me.yokeyword.sample.demo_zhihu.MainActivity;
@@ -69,7 +70,7 @@ public class FirstHomeFragment extends SupportFragment implements SwipeRefreshLa
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.zhihu_fragment_first_home, container, false);
-        EventBusActivityScope.getDefault(_mActivity).register(this);
+        EventBusActivityScope.getDefault(mActivity).register(this);
         initView(view);
         return view;
     }
@@ -85,8 +86,8 @@ public class FirstHomeFragment extends SupportFragment implements SwipeRefreshLa
         mRefreshLayout.setColorSchemeResources(R.color.colorPrimary);
         mRefreshLayout.setOnRefreshListener(this);
 
-        mAdapter = new FirstHomeAdapter(_mActivity);
-        LinearLayoutManager manager = new LinearLayoutManager(_mActivity);
+        mAdapter = new FirstHomeAdapter(mActivity);
+        LinearLayoutManager manager = new LinearLayoutManager(mActivity);
         mRecy.setLayoutManager(manager);
         mRecy.setAdapter(mAdapter);
 
@@ -110,7 +111,7 @@ public class FirstHomeFragment extends SupportFragment implements SwipeRefreshLa
                             .addSharedElement(((FirstHomeAdapter.VH) vh).tvTitle, "tv")
                             .start(fragment);
                 } else {
-                    start(fragment);
+                    start(fragment, ISupportFragment.STANDARD);
                 }
             }
         });
@@ -145,7 +146,7 @@ public class FirstHomeFragment extends SupportFragment implements SwipeRefreshLa
         mFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(_mActivity, "Action", Toast.LENGTH_SHORT).show();
+                Toast.makeText(mActivity, "Action", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -182,6 +183,6 @@ public class FirstHomeFragment extends SupportFragment implements SwipeRefreshLa
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        EventBusActivityScope.getDefault(_mActivity).unregister(this);
+        EventBusActivityScope.getDefault(mActivity).unregister(this);
     }
 }

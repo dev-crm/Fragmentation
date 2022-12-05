@@ -1,49 +1,47 @@
-package me.yokeyword.fragmentation.helper.internal;
+package me.yokeyword.fragmentation.helper.internal
 
-import android.os.Bundle;
-import android.os.Parcel;
-import android.os.Parcelable;
+import android.os.Parcelable
+import android.os.Bundle
+import android.os.Parcel
+import android.os.Parcelable.Creator
 
 /**
  * @Hide
  * Result 记录
  * Created by YoKeyword on 16/6/2.
  */
-public final class ResultRecord implements Parcelable {
-    public int requestCode;
-    public int resultCode = 0;
-    public Bundle resultBundle;
+class ResultRecord : Parcelable {
+    var requestCode = 0
+    var resultCode = 0
+    var resultBundle: Bundle? = null
 
-    public ResultRecord() {
+    constructor()
+    constructor(`in`: Parcel) {
+        requestCode = `in`.readInt()
+        resultCode = `in`.readInt()
+        resultBundle = `in`.readBundle(javaClass.classLoader)
     }
 
-    protected ResultRecord(Parcel in) {
-        requestCode = in.readInt();
-        resultCode = in.readInt();
-        resultBundle = in.readBundle(getClass().getClassLoader());
+    override fun describeContents(): Int {
+        return 0
     }
 
-    public static final Creator<ResultRecord> CREATOR = new Creator<ResultRecord>() {
-        @Override
-        public ResultRecord createFromParcel(Parcel in) {
-            return new ResultRecord(in);
+    override fun writeToParcel(dest: Parcel, flags: Int) {
+        dest.writeInt(requestCode)
+        dest.writeInt(resultCode)
+        dest.writeBundle(resultBundle)
+    }
+
+    companion object {
+        @JvmField
+        val CREATOR: Creator<ResultRecord?> = object : Creator<ResultRecord?> {
+            override fun createFromParcel(`in`: Parcel): ResultRecord? {
+                return ResultRecord(`in`)
+            }
+
+            override fun newArray(size: Int): Array<ResultRecord?> {
+                return arrayOfNulls(size)
+            }
         }
-
-        @Override
-        public ResultRecord[] newArray(int size) {
-            return new ResultRecord[size];
-        }
-    };
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(requestCode);
-        dest.writeInt(resultCode);
-        dest.writeBundle(resultBundle);
     }
 }

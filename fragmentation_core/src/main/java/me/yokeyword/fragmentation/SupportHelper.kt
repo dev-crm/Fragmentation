@@ -1,86 +1,77 @@
-package me.yokeyword.fragmentation;
+package me.yokeyword.fragmentation
 
-import android.content.Context;
-import android.view.View;
-import android.view.inputmethod.InputMethodManager;
-
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-
-import java.util.ArrayList;
-import java.util.List;
+import android.view.View
+import android.view.inputmethod.InputMethodManager
+import android.content.Context
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import java.lang.Runnable
+import java.lang.Class
+import java.util.ArrayList
 
 /**
  * Created by YoKey on 17/6/13.
  */
-
-public class SupportHelper {
-    private static final long SHOW_SPACE = 200L;
-
-    private SupportHelper() {
-    }
+object SupportHelper {
+    private const val SHOW_SPACE = 200L
 
     /**
      * 显示软键盘
      */
-    public static void showSoftInput(final View view) {
-        if (view == null || view.getContext() == null) return;
-        final InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        view.requestFocus();
-        view.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                imm.showSoftInput(view, InputMethodManager.SHOW_FORCED);
-            }
-        }, SHOW_SPACE);
+    fun showSoftInput(view: View?) {
+        if (view == null || view.context == null) return
+        val imm = view.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        view.requestFocus()
+        view.postDelayed(
+            Runnable { imm.showSoftInput(view, InputMethodManager.SHOW_FORCED) },
+            SHOW_SPACE
+        )
     }
 
     /**
      * 隐藏软键盘
      */
-    public static void hideSoftInput(View view) {
-        if (view == null || view.getContext() == null) return;
-        InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    fun hideSoftInput(view: View?) {
+        if (view == null || view.context == null) return
+        val imm = view.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(view.windowToken, 0)
     }
 
     /**
      * 显示栈视图dialog,调试时使用
      */
-    public static void showFragmentStackHierarchyView(ISupportActivity support) {
-        support.getSupportDelegate().showFragmentStackHierarchyView();
+    fun showFragmentStackHierarchyView(support: ISupportActivity) {
+        support.supportDelegate.showFragmentStackHierarchyView()
     }
 
     /**
      * 显示栈视图日志,调试时使用
      */
-    public static void logFragmentStackHierarchy(ISupportActivity support, String TAG) {
-        support.getSupportDelegate().logFragmentStackHierarchy(TAG);
+    fun logFragmentStackHierarchy(support: ISupportActivity, TAG: String?) {
+        support.supportDelegate.logFragmentStackHierarchy(TAG)
     }
 
     /**
      * 获得栈顶SupportFragment
      */
-    public static ISupportFragment getTopFragment(FragmentManager fragmentManager) {
-        return getTopFragment(fragmentManager, 0);
+    fun getTopFragment(fragmentManager: FragmentManager): ISupportFragment? {
+        return getTopFragment(fragmentManager, 0)
     }
 
-    public static ISupportFragment getTopFragment(FragmentManager fragmentManager, int containerId) {
-        List<Fragment> fragmentList = fragmentManager.getFragments();
-        if (fragmentList == null) return null;
-
-        for (int i = fragmentList.size() - 1; i >= 0; i--) {
-            Fragment fragment = fragmentList.get(i);
-            if (fragment instanceof ISupportFragment) {
-                ISupportFragment iFragment = (ISupportFragment) fragment;
-                if (containerId == 0) return iFragment;
-
-                if (containerId == iFragment.getSupportDelegate().mContainerId) {
-                    return iFragment;
+    @JvmStatic
+    fun getTopFragment(fragmentManager: FragmentManager, containerId: Int): ISupportFragment? {
+        val fragmentList = fragmentManager.fragments
+        for (i in fragmentList.indices.reversed()) {
+            val fragment = fragmentList[i]
+            if (fragment is ISupportFragment) {
+                val iFragment = fragment as ISupportFragment
+                if (containerId == 0) return iFragment
+                if (containerId == iFragment.supportDelegate.mContainerId) {
+                    return iFragment
                 }
             }
         }
-        return null;
+        return null
     }
 
     /**
@@ -88,188 +79,191 @@ public class SupportHelper {
      *
      * @param fragment 目标Fragment
      */
-    public static ISupportFragment getPreFragment(Fragment fragment) {
-        FragmentManager fragmentManager = fragment.getFragmentManager();
-        if (fragmentManager == null) return null;
-
-        List<Fragment> fragmentList = fragmentManager.getFragments();
-        if (fragmentList == null) return null;
-
-        int index = fragmentList.indexOf(fragment);
-        for (int i = index - 1; i >= 0; i--) {
-            Fragment preFragment = fragmentList.get(i);
-            if (preFragment instanceof ISupportFragment) {
-                return (ISupportFragment) preFragment;
+    @JvmStatic
+    fun getPreFragment(fragment: Fragment): ISupportFragment? {
+        val fragmentManager = fragment.fragmentManager ?: return null
+        val fragmentList = fragmentManager.fragments
+        val index = fragmentList.indexOf(fragment)
+        for (i in index - 1 downTo 0) {
+            val preFragment = fragmentList[i]
+            if (preFragment is ISupportFragment) {
+                return preFragment
             }
         }
-        return null;
+        return null
     }
 
     /**
      * Same as fragmentManager.findFragmentByTag(fragmentClass.getName());
      * find Fragment from FragmentStack
      */
-    @SuppressWarnings("unchecked")
-    public static <T extends ISupportFragment> T findFragment(FragmentManager fragmentManager, Class<T> fragmentClass) {
-        return findAddedFragment(fragmentClass, null, fragmentManager);
+    fun <T : ISupportFragment?> findFragment(
+        fragmentManager: FragmentManager,
+        fragmentClass: Class<T>?
+    ): T? {
+        return findAddedFragment(fragmentClass, null, fragmentManager)
     }
 
     /**
      * Same as fragmentManager.findFragmentByTag(fragmentTag);
-     * <p>
+     *
+     *
      * find Fragment from FragmentStack
      */
-    @SuppressWarnings("unchecked")
-    public static <T extends ISupportFragment> T findFragment(FragmentManager fragmentManager, String fragmentTag) {
-        return findAddedFragment(null, fragmentTag, fragmentManager);
+    @JvmStatic
+    fun <T : ISupportFragment?> findFragment(
+        fragmentManager: FragmentManager,
+        fragmentTag: String?
+    ): T? {
+        return findAddedFragment(null, fragmentTag, fragmentManager)
     }
 
     /**
      * 从栈顶开始，寻找FragmentManager以及其所有子栈, 直到找到状态为show & userVisible的Fragment
      */
-    public static ISupportFragment getAddedFragment(FragmentManager fragmentManager) {
-        return getAddedFragment(fragmentManager, null);
+    fun getAddedFragment(fragmentManager: FragmentManager): ISupportFragment? {
+        return getAddedFragment(fragmentManager, null)
     }
 
-    @SuppressWarnings("unchecked")
-    static <T extends ISupportFragment> T findAddedFragment(Class<T> fragmentClass, String toFragmentTag, FragmentManager fragmentManager) {
-        Fragment fragment = null;
-
+    private fun <T : ISupportFragment?> findAddedFragment(
+        fragmentClass: Class<T>?,
+        toFragmentTag: String?,
+        fragmentManager: FragmentManager
+    ): T? {
+        var fragment: Fragment? = null
         if (toFragmentTag == null) {
-            List<Fragment> fragmentList = fragmentManager.getFragments();
-            if (fragmentList == null) return null;
-
-            int sizeChildFrgList = fragmentList.size();
-
-            for (int i = sizeChildFrgList - 1; i >= 0; i--) {
-                Fragment brotherFragment = fragmentList.get(i);
-                if (brotherFragment instanceof ISupportFragment && brotherFragment.getClass().getName().equals(fragmentClass.getName())) {
-                    fragment = brotherFragment;
-                    break;
+            val fragmentList = fragmentManager.fragments
+            val sizeChildFrgList = fragmentList.size
+            for (i in sizeChildFrgList - 1 downTo 0) {
+                val brotherFragment = fragmentList[i]
+                if (brotherFragment is ISupportFragment && brotherFragment.javaClass.name == fragmentClass!!.name) {
+                    fragment = brotherFragment
+                    break
                 }
             }
         } else {
-            fragment = fragmentManager.findFragmentByTag(toFragmentTag);
-            if (fragment == null) return null;
+            fragment = fragmentManager.findFragmentByTag(toFragmentTag)
+            if (fragment == null) return null
         }
-        return (T) fragment;
+        return fragment as T?
     }
 
-    private static ISupportFragment getAddedFragment(FragmentManager fragmentManager, ISupportFragment parentFragment) {
-        List<Fragment> fragmentList = fragmentManager.getFragments();
-        if (fragmentList.size() == 0) {
-            return parentFragment;
+    private fun getAddedFragment(
+        fragmentManager: FragmentManager,
+        parentFragment: ISupportFragment?
+    ): ISupportFragment? {
+        val fragmentList = fragmentManager.fragments
+        if (fragmentList.size == 0) {
+            return parentFragment
         }
-        for (int i = fragmentList.size() - 1; i >= 0; i--) {
-            Fragment fragment = fragmentList.get(i);
-            if (fragment instanceof ISupportFragment) {
-                if (fragment.isResumed() && !fragment.isHidden() && fragment.getUserVisibleHint()) {
-                    return getAddedFragment(fragment.getChildFragmentManager(), (ISupportFragment) fragment);
+        for (i in fragmentList.indices.reversed()) {
+            val fragment = fragmentList[i]
+            if (fragment is ISupportFragment) {
+                if (fragment.isResumed && !fragment.isHidden && fragment.userVisibleHint) {
+                    return getAddedFragment(
+                        fragment.childFragmentManager,
+                        fragment as ISupportFragment
+                    )
                 }
             }
         }
-        return parentFragment;
+        return parentFragment
     }
 
     /**
      * Get the topFragment from BackStack
      */
-    public static ISupportFragment getBackStackTopFragment(FragmentManager fragmentManager) {
-        return getBackStackTopFragment(fragmentManager, 0);
+    fun getBackStackTopFragment(fragmentManager: FragmentManager): ISupportFragment? {
+        return getBackStackTopFragment(fragmentManager, 0)
     }
 
     /**
      * Get the topFragment from BackStack
      */
-    public static ISupportFragment getBackStackTopFragment(FragmentManager fragmentManager, int containerId) {
-        int count = fragmentManager.getBackStackEntryCount();
-
-        for (int i = count - 1; i >= 0; i--) {
-            FragmentManager.BackStackEntry entry = fragmentManager.getBackStackEntryAt(i);
-            Fragment fragment = fragmentManager.findFragmentByTag(entry.getName());
-            if (fragment instanceof ISupportFragment) {
-                ISupportFragment supportFragment = (ISupportFragment) fragment;
-                if (containerId == 0) return supportFragment;
-
-                if (containerId == supportFragment.getSupportDelegate().mContainerId) {
-                    return supportFragment;
+    fun getBackStackTopFragment(
+        fragmentManager: FragmentManager,
+        containerId: Int
+    ): ISupportFragment? {
+        val count = fragmentManager.backStackEntryCount
+        for (i in count - 1 downTo 0) {
+            val entry = fragmentManager.getBackStackEntryAt(i)
+            val fragment = fragmentManager.findFragmentByTag(entry.name)
+            if (fragment is ISupportFragment) {
+                val supportFragment = fragment as ISupportFragment
+                if (containerId == 0) return supportFragment
+                if (containerId == supportFragment.supportDelegate.mContainerId) {
+                    return supportFragment
                 }
             }
         }
-        return null;
+        return null
     }
-
 
     /**
      * Get the first Fragment from added list
      */
-    public static ISupportFragment getAddedFirstFragment(FragmentManager fragmentManager) {
-        List<Fragment> fragmentList = fragmentManager.getFragments();
-        if (fragmentList.size() == 0) {
-            return null;
+    fun getAddedFirstFragment(fragmentManager: FragmentManager): ISupportFragment? {
+        val fragmentList = fragmentManager.fragments
+        if (fragmentList.size == 0) {
+            return null
         }
-
-        Fragment fragment = fragmentList.get(0);
-        if (fragment instanceof ISupportFragment) {
-            if (fragment.isResumed() && !fragment.isHidden() && fragment.getUserVisibleHint()) {
-                return (ISupportFragment) fragment;
+        val fragment = fragmentList[0]
+        if (fragment is ISupportFragment) {
+            if (fragment.isResumed && !fragment.isHidden && fragment.userVisibleHint) {
+                return fragment
             }
         }
-
-        return null;
+        return null
     }
 
-
-    @SuppressWarnings("unchecked")
-    static <T extends ISupportFragment> T findBackStackFragment(Class<T> fragmentClass, String toFragmentTag, FragmentManager fragmentManager) {
-        int count = fragmentManager.getBackStackEntryCount();
-
-        if (toFragmentTag == null) {
-            toFragmentTag = fragmentClass.getName();
-        }
-
-        for (int i = count - 1; i >= 0; i--) {
-            FragmentManager.BackStackEntry entry = fragmentManager.getBackStackEntryAt(i);
-
-            if (toFragmentTag.equals(entry.getName())) {
-                Fragment fragment = fragmentManager.findFragmentByTag(entry.getName());
-                if (fragment instanceof ISupportFragment) {
-                    return (T) fragment;
+    @JvmStatic
+    fun <T : ISupportFragment?> findBackStackFragment(
+        fragmentClass: Class<T>,
+        toFragmentTag: String?,
+        fragmentManager: FragmentManager
+    ): T? {
+        val toFragmentTag = toFragmentTag ?: fragmentClass.name
+        val count = fragmentManager.backStackEntryCount
+        for (i in count - 1 downTo 0) {
+            val entry = fragmentManager.getBackStackEntryAt(i)
+            if (toFragmentTag == entry.name) {
+                val fragment = fragmentManager.findFragmentByTag(entry.name)
+                if (fragment is ISupportFragment) {
+                    return fragment as T
                 }
             }
         }
-        return null;
+        return null
     }
 
-    static List<Fragment> getWillPopFragments(FragmentManager fm, String targetTag, boolean includeTarget) {
-        Fragment target = fm.findFragmentByTag(targetTag);
-        List<Fragment> willPopFragments = new ArrayList<>();
-
-        List<Fragment> fragmentList = fm.getFragments();
-        if (fragmentList == null) return willPopFragments;
-
-        int size = fragmentList.size();
-
-        int startIndex = -1;
-        for (int i = size - 1; i >= 0; i--) {
-            if (target == fragmentList.get(i)) {
+    @JvmStatic
+    fun getWillPopFragments(
+        fm: FragmentManager,
+        targetTag: String?,
+        includeTarget: Boolean
+    ): List<Fragment> {
+        val target = fm.findFragmentByTag(targetTag)
+        val willPopFragments: MutableList<Fragment> = ArrayList()
+        val fragmentList = fm.fragments
+        val size = fragmentList.size
+        var startIndex = -1
+        for (i in size - 1 downTo 0) {
+            if (target === fragmentList[i]) {
                 if (includeTarget) {
-                    startIndex = i;
+                    startIndex = i
                 } else if (i + 1 < size) {
-                    startIndex = i + 1;
+                    startIndex = i + 1
                 }
-                break;
+                break
             }
         }
-
-        if (startIndex == -1) return willPopFragments;
-
-        for (int i = size - 1; i >= startIndex; i--) {
-            Fragment fragment = fragmentList.get(i);
-            if (fragment != null && fragment.getView() != null) {
-                willPopFragments.add(fragment);
+        if (startIndex == -1) return willPopFragments
+        for (i in size - 1 downTo startIndex) {
+            val fragment = fragmentList[i]
+            if (fragment != null && fragment.view != null) {
+                willPopFragments.add(fragment)
             }
         }
-        return willPopFragments;
+        return willPopFragments
     }
 }

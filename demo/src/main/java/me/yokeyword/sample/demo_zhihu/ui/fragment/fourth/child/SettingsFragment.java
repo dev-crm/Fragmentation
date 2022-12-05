@@ -40,7 +40,7 @@ public class SettingsFragment extends SupportFragment {
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                _mActivity.onBackPressed();
+                mActivity.onBackPressed();
             }
         });
     }

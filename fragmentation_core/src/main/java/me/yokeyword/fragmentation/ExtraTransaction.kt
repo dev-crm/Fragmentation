@@ -1,50 +1,53 @@
-package me.yokeyword.fragmentation;
+package me.yokeyword.fragmentation
 
-import android.os.Build;
-import android.view.View;
-
-import androidx.annotation.AnimRes;
-import androidx.annotation.AnimatorRes;
-import androidx.annotation.RequiresApi;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentManager;
-
-import java.util.ArrayList;
-
-import me.yokeyword.fragmentation.helper.internal.TransactionRecord;
+import androidx.annotation.AnimatorRes
+import androidx.annotation.AnimRes
+import androidx.annotation.RequiresApi
+import android.os.Build
+import android.view.View
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.FragmentManager
+import me.yokeyword.fragmentation.ISupportFragment.LaunchMode
+import java.lang.Runnable
+import me.yokeyword.fragmentation.helper.internal.TransactionRecord
+import me.yokeyword.fragmentation.helper.internal.TransactionRecord.SharedElement
 
 /**
  * Created by YoKey on 16/11/24.
  */
-public abstract class ExtraTransaction {
+abstract class ExtraTransaction {
 
     /**
      * @param tag Optional tag name for the fragment, to later retrieve the
-     *            fragment with {@link SupportHelper#findFragment(FragmentManager, String)}
-     *            , pop(String)
-     *            or FragmentManager.findFragmentByTag(String).
+     * fragment with [SupportHelper.findFragment]
+     * , pop(String)
+     * or FragmentManager.findFragmentByTag(String).
      */
-    public abstract ExtraTransaction setTag(String tag);
+    abstract fun setTag(tag: String?): ExtraTransaction
 
     /**
      * Set specific animation resources to run for the fragments that are
      * entering and exiting in this transaction. These animations will not be
      * played when popping the back stack.
      */
-    public abstract ExtraTransaction setCustomAnimations(@AnimatorRes @AnimRes int targetFragmentEnter,
-                                                         @AnimatorRes @AnimRes int currentFragmentPopExit);
+    abstract fun setCustomAnimations(
+        @AnimatorRes @AnimRes targetFragmentEnter: Int,
+        @AnimatorRes @AnimRes currentFragmentPopExit: Int
+    ): ExtraTransaction
 
     /**
      * Set specific animation resources to run for the fragments that are
-     * entering and exiting in this transaction. The <code>currentFragmentPopEnter</code>
-     * and <code>targetFragmentExit</code> animations will be played for targetFragmentEnter/currentFragmentPopExit
+     * entering and exiting in this transaction. The `currentFragmentPopEnter`
+     * and `targetFragmentExit` animations will be played for targetFragmentEnter/currentFragmentPopExit
      * operations specifically when popping the back stack.
      */
-    public abstract ExtraTransaction setCustomAnimations(@AnimatorRes @AnimRes int targetFragmentEnter,
-                                                         @AnimatorRes @AnimRes int currentFragmentPopExit,
-                                                         @AnimatorRes @AnimRes int currentFragmentPopEnter,
-                                                         @AnimatorRes @AnimRes int targetFragmentExit);
+    abstract fun setCustomAnimations(
+        @AnimatorRes @AnimRes targetFragmentEnter: Int,
+        @AnimatorRes @AnimRes currentFragmentPopExit: Int,
+        @AnimatorRes @AnimRes currentFragmentPopEnter: Int,
+        @AnimatorRes @AnimRes targetFragmentExit: Int
+    ): ExtraTransaction
 
     /**
      * Used with custom Transitions to map a View from a removed or hidden
@@ -52,36 +55,39 @@ public abstract class ExtraTransaction {
      * <var>sharedElement</var> must have a unique transitionName in the View hierarchy.
      *
      * @param sharedElement A View in a disappearing Fragment to match with a View in an
-     *                      appearing Fragment.
+     * appearing Fragment.
      * @param sharedName    The transitionName for a View in an appearing Fragment to match to the shared
-     *                      element.
-     * @see Fragment#setSharedElementReturnTransition(Object)
-     * @see Fragment#setSharedElementEnterTransition(Object)
+     * element.
+     * @see Fragment.setSharedElementReturnTransition
+     * @see Fragment.setSharedElementEnterTransition
      */
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP_MR1)
-    public abstract ExtraTransaction addSharedElement(View sharedElement, String sharedName);
+    abstract fun addSharedElement(sharedElement: View?, sharedName: String?): ExtraTransaction
+    abstract fun loadRootFragment(containerId: Int, toFragment: ISupportFragment)
+    abstract fun loadRootFragment(
+        containerId: Int,
+        toFragment: ISupportFragment,
+        addToBackStack: Boolean,
+        allowAnim: Boolean
+    )
 
-    public abstract void loadRootFragment(int containerId, ISupportFragment toFragment);
+    abstract fun start(toFragment: ISupportFragment)
+    abstract fun start(toFragment: ISupportFragment, @LaunchMode launchMode: Int)
 
-    public abstract void loadRootFragment(int containerId, ISupportFragment toFragment, boolean addToBackStack, boolean allowAnim);
+    abstract fun startDontHideSelf(toFragment: ISupportFragment)
+    abstract fun startDontHideSelf(toFragment: ISupportFragment, @LaunchMode launchMode: Int)
 
-    public abstract void start(ISupportFragment toFragment);
+    abstract fun startForResult(toFragment: ISupportFragment, requestCode: Int)
+    abstract fun startForResultDontHideSelf(toFragment: ISupportFragment, requestCode: Int)
 
-    public abstract void startDontHideSelf(ISupportFragment toFragment);
+    abstract fun startWithPop(toFragment: ISupportFragment)
+    abstract fun startWithPopTo(
+        toFragment: ISupportFragment,
+        targetFragmentTag: String?,
+        includeTargetFragment: Boolean
+    )
 
-    public abstract void startDontHideSelf(ISupportFragment toFragment, @ISupportFragment.LaunchMode int launchMode);
-
-    public abstract void start(ISupportFragment toFragment, @ISupportFragment.LaunchMode int launchMode);
-
-    public abstract void startForResult(ISupportFragment toFragment, int requestCode);
-
-    public abstract void startForResultDontHideSelf(ISupportFragment toFragment, int requestCode);
-
-    public abstract void startWithPop(ISupportFragment toFragment);
-
-    public abstract void startWithPopTo(ISupportFragment toFragment, String targetFragmentTag, boolean includeTargetFragment);
-
-    public abstract void replace(ISupportFragment toFragment);
+    abstract fun replace(toFragment: ISupportFragment)
 
     /**
      * 使用setTag()自定义Tag时，使用下面popTo()／popToChild()出栈
@@ -89,210 +95,300 @@ public abstract class ExtraTransaction {
      * @param targetFragmentTag     通过setTag()设置的tag
      * @param includeTargetFragment 是否包含目标(Tag为targetFragmentTag)Fragment
      */
-    public abstract void popTo(String targetFragmentTag, boolean includeTargetFragment);
+    abstract fun popTo(targetFragmentTag: String?, includeTargetFragment: Boolean)
+    abstract fun popTo(
+        targetFragmentTag: String?,
+        includeTargetFragment: Boolean,
+        afterPopTransactionRunnable: Runnable?,
+        popAnim: Int
+    )
 
-    public abstract void popTo(String targetFragmentTag, boolean includeTargetFragment, Runnable afterPopTransactionRunnable, int popAnim);
-
-    public abstract void popToChild(String targetFragmentTag, boolean includeTargetFragment);
-
-    public abstract void popToChild(String targetFragmentTag, boolean includeTargetFragment, Runnable afterPopTransactionRunnable, int popAnim);
+    abstract fun popToChild(targetFragmentTag: String?, includeTargetFragment: Boolean)
+    abstract fun popToChild(
+        targetFragmentTag: String?,
+        includeTargetFragment: Boolean,
+        afterPopTransactionRunnable: Runnable?,
+        popAnim: Int
+    )
 
     /**
      * Don't add this extraTransaction to the back stack.
-     * If you use this function to don't add to BackStack , then you must call {@link DontAddToBackStackTransaction#remove(ISupportFragment, boolean)} when leaving the fragment.
+     * If you use this function to don't add to BackStack , then you must call [remove] when leaving the fragment.
      *
      */
-    public abstract DontAddToBackStackTransaction dontAddToBackStack();
+    abstract fun dontAddToBackStack(): DontAddToBackStackTransaction
 
     /**
      * 使用dontAddToBackStack() 加载Fragment时， 使用remove()移除Fragment
      */
-    public abstract void remove(ISupportFragment fragment, boolean showPreFragment);
-
-    public interface DontAddToBackStackTransaction {
+    abstract fun remove(fragment: ISupportFragment?, showPreFragment: Boolean)
+    interface DontAddToBackStackTransaction {
         /**
          * add() +  hide(preFragment)
          */
-        void start(ISupportFragment toFragment);
+        fun start(toFragment: ISupportFragment)
 
         /**
          * Only add()
          */
-        void add(ISupportFragment toFragment);
+        fun add(toFragment: ISupportFragment)
 
         /**
          * replace()
          */
-        void replace(ISupportFragment toFragment);
+        fun replace(toFragment: ISupportFragment)
     }
 
     /**
      * Impl
      */
-    final static class ExtraTransactionImpl<T extends ISupportFragment> extends ExtraTransaction implements DontAddToBackStackTransaction {
-        private FragmentActivity mActivity;
-        private T mSupportF;
-        private Fragment mFragment;
-        private TransactionDelegate mTransactionDelegate;
-        private boolean mFromActivity;
-        private TransactionRecord mRecord;
+    internal class ExtraTransactionImpl<T : ISupportFragment?>(
+        mActivity: FragmentActivity,
+        private val mSupportF: T,
+        transactionDelegate: TransactionDelegate,
+        fromActivity: Boolean
+    ) : ExtraTransaction(), DontAddToBackStackTransaction {
+        private val mFragment: Fragment = mSupportF as Fragment
+        private val mTransactionDelegate: TransactionDelegate
+        private val mFromActivity: Boolean
+        private val mRecord: TransactionRecord
 
-        ExtraTransactionImpl(FragmentActivity activity, T supportF, TransactionDelegate transactionDelegate, boolean fromActivity) {
-            this.mActivity = activity;
-            this.mSupportF = supportF;
-            this.mFragment = (Fragment) supportF;
-            this.mTransactionDelegate = transactionDelegate;
-            this.mFromActivity = fromActivity;
-            mRecord = new TransactionRecord();
+        init {
+            mTransactionDelegate = transactionDelegate
+            mFromActivity = fromActivity
+            mRecord = TransactionRecord()
         }
 
-        @Override
-        public ExtraTransaction setTag(String tag) {
-            mRecord.tag = tag;
-            return this;
+        override fun setTag(tag: String?): ExtraTransaction {
+            mRecord.tag = tag
+            return this
         }
 
-        @Override
-        public ExtraTransaction setCustomAnimations(@AnimRes int targetFragmentEnter
-                , @AnimRes int currentFragmentPopExit) {
-            mRecord.targetFragmentEnter = targetFragmentEnter;
-            mRecord.currentFragmentPopExit = currentFragmentPopExit;
-            mRecord.currentFragmentPopEnter = 0;
-            mRecord.targetFragmentExit = 0;
-            return this;
+        override fun setCustomAnimations(
+            @AnimRes targetFragmentEnter: Int, @AnimRes currentFragmentPopExit: Int
+        ): ExtraTransaction {
+            mRecord.targetFragmentEnter = targetFragmentEnter
+            mRecord.currentFragmentPopExit = currentFragmentPopExit
+            mRecord.currentFragmentPopEnter = 0
+            mRecord.targetFragmentExit = 0
+            return this
         }
 
-        @Override
-        public ExtraTransaction setCustomAnimations(@AnimRes int targetFragmentEnter,
-                                                    @AnimRes int currentFragmentPopExit,
-                                                    @AnimRes int currentFragmentPopEnter,
-                                                    @AnimRes int targetFragmentExit) {
-            mRecord.targetFragmentEnter = targetFragmentEnter;
-            mRecord.currentFragmentPopExit = currentFragmentPopExit;
-            mRecord.currentFragmentPopEnter = currentFragmentPopEnter;
-            mRecord.targetFragmentExit = targetFragmentExit;
-            return this;
+        override fun setCustomAnimations(
+            @AnimRes targetFragmentEnter: Int,
+            @AnimRes currentFragmentPopExit: Int,
+            @AnimRes currentFragmentPopEnter: Int,
+            @AnimRes targetFragmentExit: Int
+        ): ExtraTransaction {
+            mRecord.targetFragmentEnter = targetFragmentEnter
+            mRecord.currentFragmentPopExit = currentFragmentPopExit
+            mRecord.currentFragmentPopEnter = currentFragmentPopEnter
+            mRecord.targetFragmentExit = targetFragmentExit
+            return this
         }
 
-        @Override
-        public ExtraTransaction addSharedElement(View sharedElement, String sharedName) {
-            if (mRecord.sharedElementList == null) {
-                mRecord.sharedElementList = new ArrayList<>();
+        override fun addSharedElement(sharedElement: View?, sharedName: String?): ExtraTransaction {
+            sharedElement?.also {
+                mRecord.sharedElementList.add(SharedElement(sharedElement, sharedName ?: ""))
             }
-            mRecord.sharedElementList.add(new TransactionRecord.SharedElement(sharedElement, sharedName));
-            return this;
+            return this
         }
 
-        @Override
-        public void loadRootFragment(int containerId, ISupportFragment toFragment) {
-            loadRootFragment(containerId, toFragment, true, false);
+        override fun loadRootFragment(containerId: Int, toFragment: ISupportFragment) {
+            loadRootFragment(containerId, toFragment, addToBackStack = true, allowAnim = false)
         }
 
-        @Override
-        public void loadRootFragment(int containerId, ISupportFragment toFragment, boolean addToBackStack, boolean allowAnim) {
-            toFragment.getSupportDelegate().mTransactionRecord = mRecord;
-            mTransactionDelegate.loadRootTransaction(getFragmentManager(), containerId, toFragment, addToBackStack, allowAnim);
+        override fun loadRootFragment(
+            containerId: Int,
+            toFragment: ISupportFragment,
+            addToBackStack: Boolean,
+            allowAnim: Boolean
+        ) {
+            toFragment.supportDelegate.mTransactionRecord = mRecord
+            mTransactionDelegate.loadRootTransaction(
+                fragmentManager,
+                containerId,
+                toFragment,
+                addToBackStack,
+                allowAnim
+            )
         }
 
-        @Override
-        public DontAddToBackStackTransaction dontAddToBackStack() {
-            mRecord.dontAddToBackStack = true;
-            return this;
+        override fun dontAddToBackStack(): DontAddToBackStackTransaction {
+            mRecord.dontAddToBackStack = true
+            return this
         }
 
-        @Override
-        public void remove(ISupportFragment fragment, boolean showPreFragment) {
-            mTransactionDelegate.remove(getFragmentManager(), (Fragment) fragment, showPreFragment);
+        override fun remove(fragment: ISupportFragment?, showPreFragment: Boolean) {
+            mTransactionDelegate.remove(fragmentManager, fragment as Fragment?, showPreFragment)
         }
 
-        @Override
-        public void popTo(String targetFragmentTag, boolean includeTargetFragment) {
-            popTo(targetFragmentTag, includeTargetFragment, null, TransactionDelegate.DEFAULT_POPTO_ANIM);
+        override fun popTo(targetFragmentTag: String?, includeTargetFragment: Boolean) {
+            popTo(
+                targetFragmentTag,
+                includeTargetFragment,
+                null,
+                TransactionDelegate.DEFAULT_POP_TO_ANIM
+            )
         }
 
-        @Override
-        public void popTo(String targetFragmentTag, boolean includeTargetFragment, Runnable afterPopTransactionRunnable, int popAnim) {
-            mTransactionDelegate.popTo(targetFragmentTag, includeTargetFragment, afterPopTransactionRunnable, getFragmentManager(), popAnim);
+        override fun popTo(
+            targetFragmentTag: String?,
+            includeTargetFragment: Boolean,
+            afterPopTransactionRunnable: Runnable?,
+            popAnim: Int
+        ) {
+            mTransactionDelegate.popTo(
+                targetFragmentTag!!,
+                includeTargetFragment,
+                afterPopTransactionRunnable,
+                fragmentManager,
+                popAnim
+            )
         }
 
-        @Override
-        public void popToChild(String targetFragmentTag, boolean includeTargetFragment) {
-            popToChild(targetFragmentTag, includeTargetFragment, null, TransactionDelegate.DEFAULT_POPTO_ANIM);
+        override fun popToChild(targetFragmentTag: String?, includeTargetFragment: Boolean) {
+            popToChild(
+                targetFragmentTag,
+                includeTargetFragment,
+                null,
+                TransactionDelegate.DEFAULT_POP_TO_ANIM
+            )
         }
 
-        @Override
-        public void popToChild(String targetFragmentTag, boolean includeTargetFragment, Runnable afterPopTransactionRunnable, int popAnim) {
+        override fun popToChild(
+            targetFragmentTag: String?,
+            includeTargetFragment: Boolean,
+            afterPopTransactionRunnable: Runnable?,
+            popAnim: Int
+        ) {
             if (mFromActivity) {
-                popTo(targetFragmentTag, includeTargetFragment, afterPopTransactionRunnable, popAnim);
+                popTo(
+                    targetFragmentTag,
+                    includeTargetFragment,
+                    afterPopTransactionRunnable,
+                    popAnim
+                )
             } else {
-                mTransactionDelegate.popTo(targetFragmentTag, includeTargetFragment, afterPopTransactionRunnable, mFragment.getChildFragmentManager(), popAnim);
+                mTransactionDelegate.popTo(
+                    targetFragmentTag!!,
+                    includeTargetFragment,
+                    afterPopTransactionRunnable,
+                    mFragment.childFragmentManager,
+                    popAnim
+                )
             }
         }
 
-        @Override
-        public void add(ISupportFragment toFragment) {
-            toFragment.getSupportDelegate().mTransactionRecord = mRecord;
-            mTransactionDelegate.dispatchStartTransaction(getFragmentManager(), mSupportF, toFragment, 0, ISupportFragment.STANDARD, TransactionDelegate.TYPE_ADD_WITHOUT_HIDE);
+        override fun add(toFragment: ISupportFragment) {
+            toFragment.supportDelegate.mTransactionRecord = mRecord
+            mTransactionDelegate.dispatchStartTransaction(
+                fragmentManager,
+                mSupportF,
+                toFragment,
+                0,
+                ISupportFragment.STANDARD,
+                TransactionDelegate.TYPE_ADD_WITHOUT_HIDE
+            )
         }
 
-        @Override
-        public void start(ISupportFragment toFragment) {
-            start(toFragment, ISupportFragment.STANDARD);
+        override fun start(toFragment: ISupportFragment) {
+            start(toFragment, ISupportFragment.STANDARD)
         }
 
-        @Override
-        public void startDontHideSelf(ISupportFragment toFragment) {
-            toFragment.getSupportDelegate().mTransactionRecord = mRecord;
-            mTransactionDelegate.dispatchStartTransaction(getFragmentManager(), mSupportF, toFragment, 0, ISupportFragment.STANDARD, TransactionDelegate.TYPE_ADD_WITHOUT_HIDE);
+        override fun startDontHideSelf(toFragment: ISupportFragment) {
+            toFragment.supportDelegate.mTransactionRecord = mRecord
+            mTransactionDelegate.dispatchStartTransaction(
+                fragmentManager,
+                mSupportF,
+                toFragment,
+                0,
+                ISupportFragment.STANDARD,
+                TransactionDelegate.TYPE_ADD_WITHOUT_HIDE
+            )
         }
 
-        @Override
-        public void startDontHideSelf(ISupportFragment toFragment, @ISupportFragment.LaunchMode int launchMode) {
-            toFragment.getSupportDelegate().mTransactionRecord = mRecord;
-            mTransactionDelegate.dispatchStartTransaction(getFragmentManager(), mSupportF, toFragment, 0, launchMode, TransactionDelegate.TYPE_ADD_WITHOUT_HIDE);
+        override fun startDontHideSelf(toFragment: ISupportFragment, @LaunchMode launchMode: Int) {
+            toFragment.supportDelegate.mTransactionRecord = mRecord
+            mTransactionDelegate.dispatchStartTransaction(
+                fragmentManager,
+                mSupportF,
+                toFragment,
+                0,
+                launchMode,
+                TransactionDelegate.TYPE_ADD_WITHOUT_HIDE
+            )
         }
 
-        @Override
-        public void start(ISupportFragment toFragment, @ISupportFragment.LaunchMode int launchMode) {
-            toFragment.getSupportDelegate().mTransactionRecord = mRecord;
-            mTransactionDelegate.dispatchStartTransaction(getFragmentManager(), mSupportF, toFragment, 0, launchMode, TransactionDelegate.TYPE_ADD);
+        override fun start(toFragment: ISupportFragment, @LaunchMode launchMode: Int) {
+            toFragment.supportDelegate.mTransactionRecord = mRecord
+            mTransactionDelegate.dispatchStartTransaction(
+                fragmentManager,
+                mSupportF,
+                toFragment,
+                0,
+                launchMode,
+                TransactionDelegate.TYPE_ADD
+            )
         }
 
-        @Override
-        public void startForResult(ISupportFragment toFragment, int requestCode) {
-            toFragment.getSupportDelegate().mTransactionRecord = mRecord;
-            mTransactionDelegate.dispatchStartTransaction(getFragmentManager(), mSupportF, toFragment, requestCode, ISupportFragment.STANDARD, TransactionDelegate.TYPE_ADD_RESULT);
+        override fun startForResult(toFragment: ISupportFragment, requestCode: Int) {
+            toFragment.supportDelegate.mTransactionRecord = mRecord
+            mTransactionDelegate.dispatchStartTransaction(
+                fragmentManager,
+                mSupportF,
+                toFragment,
+                requestCode,
+                ISupportFragment.STANDARD,
+                TransactionDelegate.TYPE_ADD_RESULT
+            )
         }
 
-        @Override
-        public void startForResultDontHideSelf(ISupportFragment toFragment, int requestCode) {
-            toFragment.getSupportDelegate().mTransactionRecord = mRecord;
-            mTransactionDelegate.dispatchStartTransaction(getFragmentManager(), mSupportF, toFragment, requestCode, ISupportFragment.STANDARD, TransactionDelegate.TYPE_ADD_RESULT_WITHOUT_HIDE);
+        override fun startForResultDontHideSelf(toFragment: ISupportFragment, requestCode: Int) {
+            toFragment.supportDelegate.mTransactionRecord = mRecord
+            mTransactionDelegate.dispatchStartTransaction(
+                fragmentManager,
+                mSupportF,
+                toFragment,
+                requestCode,
+                ISupportFragment.STANDARD,
+                TransactionDelegate.TYPE_ADD_RESULT_WITHOUT_HIDE
+            )
         }
 
-        @Override
-        public void startWithPop(ISupportFragment toFragment) {
-            toFragment.getSupportDelegate().mTransactionRecord = mRecord;
-            mTransactionDelegate.startWithPop(getFragmentManager(), mSupportF, toFragment);
+        override fun startWithPop(toFragment: ISupportFragment) {
+            toFragment.supportDelegate.mTransactionRecord = mRecord
+            mTransactionDelegate.startWithPop(fragmentManager, mSupportF, toFragment)
         }
 
-        @Override
-        public void startWithPopTo(ISupportFragment toFragment, String targetFragmentTag, boolean includeTargetFragment) {
-            toFragment.getSupportDelegate().mTransactionRecord = mRecord;
-            mTransactionDelegate.startWithPopTo(getFragmentManager(), mSupportF, toFragment, targetFragmentTag, includeTargetFragment);
+        override fun startWithPopTo(
+            toFragment: ISupportFragment,
+            targetFragmentTag: String?,
+            includeTargetFragment: Boolean
+        ) {
+            toFragment.supportDelegate.mTransactionRecord = mRecord
+            mTransactionDelegate.startWithPopTo(
+                fragmentManager,
+                mSupportF,
+                toFragment,
+                targetFragmentTag,
+                includeTargetFragment
+            )
         }
 
-        @Override
-        public void replace(ISupportFragment toFragment) {
-            toFragment.getSupportDelegate().mTransactionRecord = mRecord;
-            mTransactionDelegate.dispatchStartTransaction(getFragmentManager(), mSupportF, toFragment, 0, ISupportFragment.STANDARD, TransactionDelegate.TYPE_REPLACE);
+        override fun replace(toFragment: ISupportFragment) {
+            toFragment.supportDelegate.mTransactionRecord = mRecord
+            mTransactionDelegate.dispatchStartTransaction(
+                fragmentManager,
+                mSupportF,
+                toFragment,
+                0,
+                ISupportFragment.STANDARD,
+                TransactionDelegate.TYPE_REPLACE
+            )
         }
 
-        private FragmentManager getFragmentManager() {
-            if (mFragment == null) {
-                return mActivity.getSupportFragmentManager();
-            }
-            return mFragment.getFragmentManager();
-        }
+        private val fragmentManager: FragmentManager =
+            mFragment.fragmentManager ?: mActivity.supportFragmentManager
     }
 }

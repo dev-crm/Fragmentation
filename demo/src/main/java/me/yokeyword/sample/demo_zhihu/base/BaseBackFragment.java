@@ -16,7 +16,7 @@ public class BaseBackFragment extends SupportFragment {
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                _mActivity.onBackPressed();
+                mActivity.onBackPressed();
             }
         });
     }

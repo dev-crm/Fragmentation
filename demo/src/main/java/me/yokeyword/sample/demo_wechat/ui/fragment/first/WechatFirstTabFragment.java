@@ -62,7 +62,7 @@ public class WechatFirstTabFragment extends SupportFragment implements SwipeRefr
         mRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.refresh_layout);
         mRecy = (RecyclerView) view.findViewById(R.id.recy);
 
-        EventBusActivityScope.getDefault(_mActivity).register(this);
+        EventBusActivityScope.getDefault(mActivity).register(this);
 
         mToolbar.setTitle(R.string.home);
     }
@@ -72,7 +72,7 @@ public class WechatFirstTabFragment extends SupportFragment implements SwipeRefr
         super.onLazyInitView(savedInstanceState);
         mRefreshLayout.setOnRefreshListener(this);
 
-        mRecy.setLayoutManager(new LinearLayoutManager(_mActivity));
+        mRecy.setLayoutManager(new LinearLayoutManager(mActivity));
         mRecy.setHasFixedSize(true);
         final int space = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 0.5f, getResources().getDisplayMetrics());
         mRecy.addItemDecoration(new RecyclerView.ItemDecoration() {
@@ -81,7 +81,7 @@ public class WechatFirstTabFragment extends SupportFragment implements SwipeRefr
                 outRect.set(0, 0, 0, space);
             }
         });
-        mAdapter = new ChatAdapter(_mActivity);
+        mAdapter = new ChatAdapter(mActivity);
         mRecy.setAdapter(mAdapter);
 
         mRecy.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -160,6 +160,6 @@ public class WechatFirstTabFragment extends SupportFragment implements SwipeRefr
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        EventBusActivityScope.getDefault(_mActivity).unregister(this);
+        EventBusActivityScope.getDefault(mActivity).unregister(this);
     }
 }

@@ -152,14 +152,14 @@ public class MainActivity extends MySupportActivity
                     newBundle.putString("from", "From:" + topFragment.getClass().getSimpleName());
                     fragment.putNewBundle(newBundle);
 
-                    myHome.start(fragment, SupportFragment.SINGLETASK);
+                    myHome.start(fragment, SupportFragment.SINGLE_TASK);
                 } else if (id == R.id.nav_discover) {
                     DiscoverFragment fragment = findFragment(DiscoverFragment.class);
                     if (fragment == null) {
                         myHome.startWithPopTo(DiscoverFragment.newInstance(), HomeFragment.class, false);
                     } else {
                         // 如果已经在栈内,则以SingleTask模式start
-                        myHome.start(fragment, SupportFragment.SINGLETASK);
+                        myHome.start(fragment, SupportFragment.SINGLE_TASK);
                     }
                 } else if (id == R.id.nav_shop) {
                     ShopFragment fragment = findFragment(ShopFragment.class);
